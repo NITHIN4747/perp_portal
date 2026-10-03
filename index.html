@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InterviewAce — Interview Preparation Portal</title>
+  <meta name="description" content="Upload your question bank (PDF/DOCX), take timed mock interviews, shuffle questions, and get detailed analytics with a marked answer sheet." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- PDF.js for parsing PDF files -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- Mammoth.js for DOCX parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <!-- jsPDF for generating results PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- Chart.js for analytics -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <!-- Marked.js for markdown -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.1/marked.min.js"></script>
+  <!-- MathJax Configuration -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }
+    };
+  </script>
+  <!-- MathJax for rendering LaTeX formulas -->
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ===== SIDEBAR NAV ===== -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🎯</div>
+    <span class="logo-text">InterviewAce</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="nav-item active" data-section="home" onclick="navigate('home')">
+      <span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span>
+    </a>
+    <a class="nav-item" data-section="upload" onclick="navigate('upload')">
+      <span class="nav-icon">📤</span><span class="nav-label">Upload Questions</span>
+    </a>
+    <a class="nav-item" data-section="settings" onclick="navigate('settings')">
+      <span class="nav-icon">⚙️</span><span class="nav-label">Quiz Settings</span>
+    </a>
+    <a class="nav-item" data-section="quiz" onclick="navigate('quiz')">
+      <span class="nav-icon">🧠</span><span class="nav-label">Start Quiz</span>
+    </a>
+    <a class="nav-item" data-section="analytics" onclick="navigate('analytics')">
+      <span class="nav-icon">📊</span><span class="nav-label">Analytics</span>
+    </a>
+    <a class="nav-item" data-section="results" onclick="navigate('results')">
+      <span class="nav-icon">📋</span><span class="nav-label">Results</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="question-count-badge" id="sidebarQCount">
+      <span id="sidebarQNum">0</span> questions loaded
+    </div>
+  </div>
+</aside>
+
+<!-- ===== MOBILE TOP BAR ===== -->
+<div class="mobile-topbar">
+  <button class="hamburger" onclick="toggleSidebar()">☰</button>
+  <span class="mobile-logo">🎯 InterviewAce</span>
+  <div id="mobileTimer" class="mobile-timer hidden"></div>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main class="main-content">
+
+  <!-- ===== SECTION: HOME / DASHBOARD ===== -->
+  <section class="section active" id="sec-home">
+    <div class="section-header">
+      <h1>Welcome back, Candidate 👋</h1>
+      <p>Your personalized interview preparation hub.</p>
+    </div>
+
+    <div class="stats-grid" id="homeStats">
+      <div class="stat-card" style="--accent:#6c63ff">
+        <div class="stat-icon">📚</div>
+        <div class="stat-num" id="statTotalQ">0</div>
+        <div class="stat-label">Questions Loaded</div>
+      </div>
+      <div class="stat-card" style="--accent:#00c9a7">
+        <div class="stat-icon">✅</div>
+        <div class="stat-num" id="statAttempts">0</div>
+        <div class="stat-label">Quizzes Taken</div>
+      </div>
+      <div class="stat-card" style="--accent:#f7b731">
+        <div class="stat-icon">🏆</div>
+        <div class="stat-num" id="statBestScore">—</div>
+        <div class="stat-label">Best Score</div>
+      </div>
+      <div class="stat-card" style="--accent:#fc5c7d">
+        <div class="stat-icon">⏱️</div>
+        <div class="stat-num" id="statAvgTime">—</div>
+        <div class="stat-label">Avg Time / Q</div>
+      </div>
+    </div>
+
+    <div class="home-actions">
+      <button class="btn-primary" onclick="navigate('upload')">📤 Upload Question Bank</button>
+      <button class="btn-secondary" onclick="navigate('settings')">⚙️ Configure Quiz</button>
+      <button class="btn-accent" onclick="startQuizFlow()">🚀 Quick Start Quiz</button>
+    </div>
+
+    <div class="recent-card" id="recentSessionCard" style="display:none">
+      <h3>📝 Recent Sessions</h3>
+      <div id="recentSessionsList"></div>
+    </div>
+
+    <div class="tip-card">
+      <div class="tip-header">💡 How to use InterviewAce</div>
+      <ol class="tip-steps">
+        <li>Upload a <strong>PDF or DOCX</strong> file with MCQ questions (with options A–D and correct answer marked).</li>
+        <li>Configure quiz settings — number of questions, time per question, shuffle mode.</li>
+        <li>Start the quiz and answer under timed pressure.</li>
+        <li>View analytics and download a <strong>marked answer PDF</strong>.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ===== SECTION: UPLOAD ===== -->
+  <section class="section" id="sec-upload">
+    <div class="section-header">
+      <h1>📤 Upload Question Bank</h1>
+      <p>Supported formats: <strong>PDF</strong> and <strong>DOCX / DOC</strong></p>
+    </div>
+
+    <div class="upload-zone" id="uploadZone">
+      <div class="upload-icon">📄</div>
+      <div class="upload-title">Drag & Drop your file here</div>
+      <div class="upload-sub">or click to browse</div>
+      <input type="file" id="fileInput" accept=".pdf,.docx,.doc" style="display:none" />
+      <button class="btn-primary upload-btn" onclick="document.getElementById('fileInput').click()">Choose File</button>
+    </div>
+
+    <div class="upload-progress hidden" id="uploadProgress">
+      <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+      <div class="progress-label" id="progressLabel">Parsing file…</div>
+    </div>
+
+    <div class="format-guide card">
+      <h3>📋 Expected Question Format</h3>
+      <p>Your document should follow one of these formats:</p>
+      <div class="format-examples">
+        <div class="format-ex">
+          <div class="format-tag">Format 1 (Recommended)</div>
+          <pre>Q1. What is a closure in JavaScript?
+A) A function with no return
+B) A function that captures its lexical scope
+C) An arrow function
+D) A callback
+
+Answer: B</pre>
+        </div>
+        <div class="format-ex">
+          <div class="format-tag">Format 2</div>
+          <pre>1. Which data structure uses LIFO?
+a. Queue
+b. Stack
+c. Tree
+d. Graph
+Correct: b</pre>
+        </div>
+        <div class="format-ex">
+          <div class="format-tag">Format 3 (Inline Answer)</div>
+          <pre>Q: What does DOM stand for?
+A) Document Object Model *
+B) Data Object Model
+C) Document Oriented Markup
+D) Dynamic Object Method</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="parsed-preview hidden card" id="parsedPreview">
+      <div class="preview-header">
+        <h3>✅ Questions Parsed Successfully</h3>
+        <span class="badge" id="parsedCount"></span>
+      </div>
+      <div class="preview-table-wrap">
+        <table class="preview-table" id="previewTable">
+          <thead><tr><th>#</th><th>Question</th><th>Options</th><th>Answer</th></tr></thead>
+          <tbody id="previewTbody"></tbody>
+        </table>
+      </div>
+      <div class="preview-actions">
+        <button class="btn-primary" onclick="confirmQuestions()">✅ Use These Questions</button>
+        <button class="btn-outline" onclick="resetUpload()">🔄 Upload Different File</button>
+      </div>
+    </div>
+
+    <div class="parse-error hidden card" id="parseError">
+      <div class="error-icon">⚠️</div>
+      <div class="error-msg" id="parseErrorMsg"></div>
+      <button class="btn-outline" onclick="resetUpload()">Try Again</button>
+    </div>
+  </section>
+
+  <!-- ===== SECTION: SETTINGS ===== -->
+  <section class="section" id="sec-settings">
+    <div class="section-header">
+      <h1>⚙️ Quiz Settings</h1>
+      <p>Customise your mock interview experience.</p>
+    </div>
+
+    <div class="settings-grid">
+      <div class="setting-card card">
+        <div class="setting-icon">🔢</div>
+        <div class="setting-info">
+          <h3>Number of Questions</h3>
+          <p>How many questions per quiz session</p>
+        </div>
+        <div class="setting-control">
+          <input type="number" id="settingNumQ" min="1" max="200" value="10" class="num-input" />
+          <div class="quick-btns">
+            <button onclick="setNumQ(5)">5</button>
+            <button onclick="setNumQ(10)">10</button>
+            <button onclick="setNumQ(20)">20</button>
+            <button onclick="setNumQ(50)">50</button>
+            <button onclick="setNumQ(999)">All</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-card card">
+        <div class="setting-icon">⏱️</div>
+        <div class="setting-info">
+          <h3>Time Per Question</h3>
+          <p>Seconds allowed per question (0 = unlimited)</p>
+        </div>
+        <div class="setting-control">
+          <input type="number" id="settingTimeQ" min="0" max="600" value="60" class="num-input" />
+          <div class="quick-btns">
+            <button onclick="setTimeQ(0)">∞</button>
+            <button onclick="setTimeQ(30)">30s</button>
+            <button onclick="setTimeQ(60)">1m</button>
+            <button onclick="setTimeQ(120)">2m</button>
+            <button onclick="setTimeQ(300)">5m</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-card card">
+        <div class="setting-icon">🔀</div>
+        <div class="setting-info">
+          <h3>Shuffle Questions</h3>
+          <p>Randomise question order each quiz</p>
+        </div>
+        <div class="setting-control">
+          <label class="toggle">
+            <input type="checkbox" id="settingShuffle" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="setting-card card">
+        <div class="setting-icon">🃏</div>
+        <div class="setting-info">
+          <h3>Shuffle Options</h3>
+          <p>Randomise A/B/C/D order for each question</p>
+        </div>
+        <div class="setting-control">
+          <label class="toggle">
+            <input type="checkbox" id="settingShuffleOpts" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="setting-card card">
+        <div class="setting-icon">👁️</div>
+        <div class="setting-info">
+          <h3>Show Answer After Each Question</h3>
+          <p>Reveal correct answer immediately after answering</p>
+        </div>
+        <div class="setting-control">
+          <label class="toggle">
+            <input type="checkbox" id="settingShowAnswer" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="setting-card card">
+        <div class="setting-icon">📑</div>
+        <div class="setting-info">
+          <h3>Quiz Mode</h3>
+          <p>Choose between practice and exam mode</p>
+        </div>
+        <div class="setting-control">
+          <select id="settingMode" class="select-input">
+            <option value="exam">Exam Mode (no hints)</option>
+            <option value="practice">Practice Mode (with hints)</option>
+          </select>
+        </div>
+      </div>
+      <div class="setting-card card">
+        <div class="setting-icon">🤖</div>
+        <div class="setting-info">
+          <h3>Gemini API Key</h3>
+          <p>Required for AI Hints. Get one for free from Google AI Studio.</p>
+        </div>
+        <div class="setting-control">
+          <input type="password" id="settingApiKey" placeholder="Paste API Key here..." class="text-input" style="width:100%" />
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-footer">
+      <button class="btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+      <button class="btn-accent" onclick="startQuizFlow()">🚀 Start Quiz Now</button>
+    </div>
+  </section>
+
+  <!-- ===== SECTION: QUIZ ===== -->
+  <section class="section" id="sec-quiz">
+    <!-- Quiz NOT started state -->
+    <div id="quizNotStarted">
+      <div class="section-header">
+        <h1>🧠 Ready to Practice?</h1>
+        <p>Configure your settings and upload questions before starting.</p>
+      </div>
+      <div class="start-placeholder">
+        <div class="placeholder-icon">🎯</div>
+        <p id="quizReadyMsg">Upload a question bank first to begin.</p>
+        <button class="btn-primary" onclick="startQuizFlow()">Start Quiz</button>
+      </div>
+    </div>
+
+    <!-- Quiz IN PROGRESS state -->
+    <div id="quizInProgress" class="hidden">
+      <div class="quiz-header">
+        <div class="quiz-meta">
+          <span class="quiz-qnum" id="qNum">Q 1 / 10</span>
+          <div class="quiz-progress-bar">
+            <div class="quiz-progress-fill" id="quizProgressFill"></div>
+          </div>
+        </div>
+        <div class="quiz-timer-wrap">
+          <div class="timer-ring">
+            <svg class="timer-svg" viewBox="0 0 64 64">
+              <circle class="timer-bg" cx="32" cy="32" r="28"/>
+              <circle class="timer-fg" id="timerCircle" cx="32" cy="32" r="28"/>
+            </svg>
+            <div class="timer-text" id="timerText">60</div>
+          </div>
+        </div>
+        <button class="btn-outline btn-sm" onclick="endQuizEarly()">End Quiz</button>
+      </div>
+
+      <div class="question-card card" id="questionCard">
+        <div class="question-num-badge" id="questionNumBadge">Q1</div>
+        <div class="question-text" id="questionText">Loading…</div>
+        <div class="options-grid" id="optionsGrid"></div>
+        <div class="question-footer">
+          <button class="btn-outline btn-sm hidden" id="btnPrev" onclick="prevQuestion()">← Previous</button>
+          <button class="btn-outline btn-sm" id="btnSkip" onclick="skipQuestion()">⏭ Skip</button>
+          <button class="btn-accent btn-sm hidden" id="btnHint" onclick="generateHint()">💡 AI Hint</button>
+          <button class="btn-primary btn-sm hidden" id="btnNext" onclick="nextQuestion()">Next →</button>
+        </div>
+      </div>
+
+      <div class="answer-feedback hidden card" id="answerFeedback">
+        <div class="feedback-icon" id="feedbackIcon"></div>
+        <div class="feedback-msg" id="feedbackMsg"></div>
+      </div>
+
+      <div class="ai-hint-box hidden card" id="aiHintBox">
+        <div class="hint-header">
+          <div class="hint-title">💡 AI Assistant</div>
+          <button class="btn-close" onclick="document.getElementById('aiHintBox').classList.add('hidden')">×</button>
+        </div>
+        <div class="hint-content" id="aiHintContent">Loading hint...</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION: ANALYTICS ===== -->
+  <section class="section" id="sec-analytics">
+    <div class="section-header">
+      <h1>📊 Analytics</h1>
+      <p>Detailed breakdown of your performance.</p>
+    </div>
+    <div class="no-data-placeholder" id="analyticsEmpty">
+      <div class="placeholder-icon">📈</div>
+      <p>Complete a quiz to see analytics.</p>
+    </div>
+    <div id="analyticsContent" class="hidden">
+      <div class="analytics-summary-row">
+        <div class="analytic-kpi" style="--c:#6c63ff">
+          <div class="kpi-val" id="aScore">—</div>
+          <div class="kpi-lbl">Score</div>
+        </div>
+        <div class="analytic-kpi" style="--c:#00c9a7">
+          <div class="kpi-val" id="aCorrect">—</div>
+          <div class="kpi-lbl">Correct</div>
+        </div>
+        <div class="analytic-kpi" style="--c:#fc5c7d">
+          <div class="kpi-val" id="aWrong">—</div>
+          <div class="kpi-lbl">Wrong</div>
+        </div>
+        <div class="analytic-kpi" style="--c:#f7b731">
+          <div class="kpi-val" id="aSkipped">—</div>
+          <div class="kpi-lbl">Skipped</div>
+        </div>
+        <div class="analytic-kpi" style="--c:#4fc3f7">
+          <div class="kpi-val" id="aTotalTime">—</div>
+          <div class="kpi-lbl">Total Time</div>
+        </div>
+      </div>
+
+      <div class="charts-row">
+        <div class="chart-card card">
+          <h3>Result Breakdown</h3>
+          <canvas id="doughnutChart"></canvas>
+        </div>
+        <div class="chart-card card">
+          <h3>Time Per Question (s)</h3>
+          <canvas id="barChart"></canvas>
+        </div>
+      </div>
+
+      <div class="review-table-wrap card">
+        <div class="review-header-row">
+          <h3>📝 Question-by-Question Review</h3>
+          <div class="filter-tabs">
+            <button class="ftab active" onclick="filterReview('all', this)">All</button>
+            <button class="ftab" onclick="filterReview('correct', this)">✅ Correct</button>
+            <button class="ftab" onclick="filterReview('wrong', this)">❌ Wrong</button>
+            <button class="ftab" onclick="filterReview('skipped', this)">⏭ Skipped</button>
+          </div>
+        </div>
+        <div id="reviewTable"></div>
+      </div>
+
+      <div class="analytics-actions">
+        <button class="btn-primary" onclick="downloadResultsPDF()">📥 Download Marked Answer PDF</button>
+        <button class="btn-secondary" onclick="startQuizFlow()">🔄 Retake Quiz</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION: RESULTS ===== -->
+  <section class="section" id="sec-results">
+    <div class="section-header">
+      <h1>📋 Session History</h1>
+      <p>All your past quiz results.</p>
+    </div>
+    <div class="no-data-placeholder" id="historyEmpty">
+      <div class="placeholder-icon">📋</div>
+      <p>No sessions recorded yet.</p>
+    </div>
+    <div id="historyList" class="history-list"></div>
+    <div class="results-actions" id="resultsActionsRow" style="display:none">
+      <button class="btn-outline btn-danger" onclick="clearHistory()">🗑 Clear All History</button>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== TOAST ===== -->
+<div class="toast" id="toast"></div>
+
+<script src="app.js?v=2"></script>
+</body>
+</html>
