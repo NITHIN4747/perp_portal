@@ -629,7 +629,7 @@ Clearly state the correct option.
 Provide a crystal-clear, logical breakdown of how to arrive at the answer. If it's a coding or math question, explain the underlying concept.
 
 ### ⚡ Shortcuts, Tricks & Formulas
-If applicable, provide a faster way to solve this type of problem, key formulas to memorize, or edge cases to watch out for. Use LaTeX ($$...$$ or $...$) for any math formulas.
+If applicable, provide a faster way to solve this type of problem, key formulas to memorize, or edge cases to watch out for. Use strict LaTeX ($$...$$ for display, $...$ for inline) for ALL math formulas. Do NOT use \\[ or \\( brackets.
 
 ### ❌ Why the Others are Wrong
 A very brief explanation of why the most tempting wrong options are incorrect.
@@ -685,6 +685,11 @@ ${optionsText}`;
       if (data.error) throw new Error(data.error.message);
       text = data.choices[0].message.content;
     }
+
+    // Fix LaTeX delimiters: marked.js strips backslashes from \[ and \( which breaks MathJax.
+    // We convert them to $$ and $ safely.
+    text = text.replace(/\\\[/g, '$$$$').replace(/\\\]/g, '$$$$');
+    text = text.replace(/\\\(/g, '$').replace(/\\\)/g, '$');
 
     hintContent.innerHTML = marked.parse(text);
     if (window.MathJax) {
