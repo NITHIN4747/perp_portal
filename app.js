@@ -614,16 +614,28 @@ async function generateHint() {
   const q = state.quizQuestions[state.currentIndex];
   const optionsText = q.options.map(o => `${o.letter}) ${o.text}`).join('\n');
   
-  const prompt = `You are an expert interview coach. Provide a clear, detailed explanation for the correct answer to this multiple-choice question.
-If applicable, include any relevant shortcuts, tricks, or formulas that can help solve this type of problem quickly during an exam.
+  const prompt = `You are an expert interview coach and tutor. A student is asking for an explanation of a multiple-choice question.
+Please provide a beautifully structured, highly readable response using Markdown formatting.
+
+Structure your response EXACTLY like this:
+
+### 🎯 Correct Answer
+Clearly state the correct option.
+
+### 🧠 Step-by-Step Explanation
+Provide a crystal-clear, logical breakdown of how to arrive at the answer. If it's a coding or math question, explain the underlying concept.
+
+### ⚡ Shortcuts, Tricks & Formulas
+If applicable, provide a faster way to solve this type of problem, key formulas to memorize, or edge cases to watch out for. Use LaTeX ($$...$$ or $...$) for any math formulas.
+
+### ❌ Why the Others are Wrong
+A very brief explanation of why the most tempting wrong options are incorrect.
 
 Question:
 ${q.question}
 
 Options:
-${optionsText}
-
-Explanation, Shortcuts & Answer:`;
+${optionsText}`;
 
   try {
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${key}`, {
