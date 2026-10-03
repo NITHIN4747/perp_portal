@@ -30,6 +30,7 @@ const state = {
     shuffleOpts: false,
     showAnswer: false,
     mode: 'exam',
+    apiProvider: 'gemini',
     apiKey: '',
   },
   sessions: [],              // history
@@ -393,6 +394,7 @@ function saveSettings() {
   state.settings.shuffleOpts  = document.getElementById('settingShuffleOpts').checked;
   state.settings.showAnswer   = document.getElementById('settingShowAnswer').checked;
   state.settings.mode         = document.getElementById('settingMode').value;
+  state.settings.apiProvider  = document.getElementById('settingApiProvider').value;
   state.settings.apiKey       = document.getElementById('settingApiKey').value.trim();
   
   localStorage.setItem('ia_settings', JSON.stringify(state.settings));
@@ -412,6 +414,7 @@ function syncSettingsUI() {
   document.getElementById('settingShuffleOpts').checked = state.settings.shuffleOpts;
   document.getElementById('settingShowAnswer').checked = state.settings.showAnswer;
   document.getElementById('settingMode').value = state.settings.mode;
+  document.getElementById('settingApiProvider').value = state.settings.apiProvider || 'gemini';
   document.getElementById('settingApiKey').value = state.settings.apiKey;
 }
 
@@ -638,17 +641,51 @@ Options:
 ${optionsText}`;
 
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${key}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
-      })
-    });
-    const data = await res.json();
-    if (data.error) throw new Error(data.error.message);
-    const text = data.candidates[0].content.parts[0].text;
+    let res, data, text;
+    const provider = state.settings.apiProvider || 'gemini';
+    
+    if (provider === 'gemini') {
+      res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${key}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
+        })
+      });
+      data = await res.json();
+      if (data.error) throw new Error(data.error.message);
+      text = data.candidates[0].content.parts[0].text;
+    } else if (provider === 'groq') {
+      res = await fetch(`https://api.groq.com/openai/v1/chat/completions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+        body: JSON.stringify({
+          model: 'llama3-8b-8192',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.7,
+          max_tokens: 2048
+        })
+      });
+      data = await res.json();
+      if (data.error) throw new Error(data.error.message);
+      text = data.choices[0].message.content;
+    } else if (provider === 'openrouter') {
+      res = await fetch(`https://openrouter.ai/api/v1/chat/completions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+        body: JSON.stringify({
+          model: 'google/gemini-2.0-flash-exp:free',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.7,
+          max_tokens: 2048
+        })
+      });
+      data = await res.json();
+      if (data.error) throw new Error(data.error.message);
+      text = data.choices[0].message.content;
+    }
+
     hintContent.innerHTML = marked.parse(text);
     if (window.MathJax) {
       MathJax.typesetPromise([hintContent]).catch(err => console.error(err));

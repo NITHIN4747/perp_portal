@@ -310,10 +310,15 @@ D) Dynamic Object Method</pre>
       <div class="setting-card card">
         <div class="setting-icon">🤖</div>
         <div class="setting-info">
-          <h3>Gemini API Key</h3>
-          <p>Required for AI Hints. Get one for free from Google AI Studio.</p>
+          <h3>AI Provider & API Key</h3>
+          <p>Choose your preferred AI and paste its API key.</p>
         </div>
-        <div class="setting-control">
+        <div class="setting-control" style="display:flex;flex-direction:column;gap:10px;">
+          <select id="settingApiProvider" class="select-input">
+            <option value="gemini">Google Gemini (Recommended)</option>
+            <option value="groq">Groq (Blazing Fast, High Limits)</option>
+            <option value="openrouter">OpenRouter (Multiple Models)</option>
+          </select>
           <input type="password" id="settingApiKey" placeholder="Paste API Key here..." class="text-input" style="width:100%" />
         </div>
       </div>
@@ -474,6 +479,6 @@ D) Dynamic Object Method</pre>
 <!-- ===== TOAST ===== -->
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=4"></script>
+<script src="app.js?v=5"></script>
 </body>
 </html>
