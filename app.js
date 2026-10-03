@@ -661,7 +661,7 @@ ${optionsText}`;
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
         body: JSON.stringify({
-          model: 'llama3-8b-8192',
+          model: 'llama-3.3-70b-versatile',
           messages: [{ role: 'user', content: prompt }],
           temperature: 0.7,
           max_tokens: 2048
@@ -675,7 +675,7 @@ ${optionsText}`;
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
         body: JSON.stringify({
-          model: 'google/gemini-2.0-flash-exp:free',
+          model: 'openrouter/free',
           messages: [{ role: 'user', content: prompt }],
           temperature: 0.7,
           max_tokens: 2048
