@@ -1033,12 +1033,25 @@ function viewSession(idx) {
 }
 
 function clearHistory() {
-  if (!confirm('Clear all session history?')) return;
   state.sessions = [];
   state.lastSession = null;
   persistSessions();
+  
+  // Clear dashboard stats
+  const statAttempts = document.getElementById('statAttempts');
+  if(statAttempts) statAttempts.textContent = '0';
+  const statBestScore = document.getElementById('statBestScore');
+  if(statBestScore) statBestScore.textContent = '0%';
+  const statAvgTime = document.getElementById('statAvgTime');
+  if(statAvgTime) statAvgTime.textContent = '0s';
+  
+  const recentCard = document.getElementById('recentSessionCard');
+  if(recentCard) recentCard.style.display = 'none';
+  const recentList = document.getElementById('recentSessionsList');
+  if(recentList) recentList.innerHTML = '';
+
   renderHistory();
-  toast('🗑️ History cleared.');
+  toast('🗑️ All history has been cleared.');
 }
 
 /* ================================================================
