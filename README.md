@@ -36,23 +36,35 @@ InterviewAce is a powerful, locally-hosted, static Interview Preparation Portal.
 
 ---
 
-## 🤖 Setting Up the Gemini AI Assistant
+## 🤖 Setting Up the AI Assistant
 
-InterviewAce integrates with the Google Gemini API to generate dynamic, contextual hints for any question.
+InterviewAce integrates with multiple AI providers (Google Gemini, Groq, and OpenRouter) to generate dynamic, contextual hints and math explanations for any question.
 
 ### Step 1: Get Your Free API Key
+
+You can choose any of the providers below. We recommend Groq or OpenRouter if you run into rate-limiting issues with Gemini.
+
+**Option A: Groq (Recommended - Blazing Fast & High Free Limits)**
+1. Go to [console.groq.com/keys](https://console.groq.com/keys).
+2. Sign in and click **Create API Key**.
+3. Copy your key (starts with `gsk_`).
+
+**Option B: Google Gemini API (Standard)**
 1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey).
-2. Sign in with your Google Account.
-3. Click the **"Create API Key"** button.
-4. If you don't have a project, create a new one or select an existing Google Cloud project.
-5. Copy the generated API Key (it usually starts with `AQ...`).
+2. Sign in and click **Create API Key**.
+3. Copy the generated API Key.
+
+**Option C: OpenRouter (Multiple Models)**
+1. Go to [openrouter.ai/keys](https://openrouter.ai/keys).
+2. Sign in and click **Create Key**.
+3. Copy your key (starts with `sk-or-v1-`).
 
 ### Step 2: Paste the Key into InterviewAce
 1. Open the InterviewAce portal and click on **Quiz Settings** in the sidebar.
-2. Scroll down to the **🤖 Gemini API Key** card.
-3. Paste your API Key into the text box.
-4. Click **💾 Save Settings** at the bottom of the page.
-5. The API key is securely saved directly in your browser's local storage. You're all set!
+2. Scroll down to the **🤖 AI Provider & API Key** card.
+3. Select your chosen AI Provider from the dropdown menu (e.g., Groq).
+4. Paste your API Key into the text box.
+5. The API key and provider preference will **auto-save instantly** directly in your browser's local storage. You're all set!
 
 ---
 
