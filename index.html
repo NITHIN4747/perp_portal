@@ -223,7 +223,7 @@ D) Dynamic Object Method</pre>
           <p>How many questions per quiz session</p>
         </div>
         <div class="setting-control">
-          <input type="number" id="settingNumQ" min="1" max="200" value="10" class="num-input" />
+          <input type="number" id="settingNumQ" min="1" max="200" value="10" class="num-input" onchange="saveSettings()" />
           <div class="quick-btns">
             <button onclick="setNumQ(5)">5</button>
             <button onclick="setNumQ(10)">10</button>
@@ -241,7 +241,7 @@ D) Dynamic Object Method</pre>
           <p>Seconds allowed per question (0 = unlimited)</p>
         </div>
         <div class="setting-control">
-          <input type="number" id="settingTimeQ" min="0" max="600" value="60" class="num-input" />
+          <input type="number" id="settingTimeQ" min="0" max="600" value="60" class="num-input" onchange="saveSettings()" />
           <div class="quick-btns">
             <button onclick="setTimeQ(0)">∞</button>
             <button onclick="setTimeQ(30)">30s</button>
@@ -260,7 +260,7 @@ D) Dynamic Object Method</pre>
         </div>
         <div class="setting-control">
           <label class="toggle">
-            <input type="checkbox" id="settingShuffle" checked />
+            <input type="checkbox" id="settingShuffle" checked onchange="saveSettings()" />
             <span class="toggle-slider"></span>
           </label>
         </div>
@@ -274,7 +274,7 @@ D) Dynamic Object Method</pre>
         </div>
         <div class="setting-control">
           <label class="toggle">
-            <input type="checkbox" id="settingShuffleOpts" />
+            <input type="checkbox" id="settingShuffleOpts" onchange="saveSettings()" />
             <span class="toggle-slider"></span>
           </label>
         </div>
@@ -288,7 +288,7 @@ D) Dynamic Object Method</pre>
         </div>
         <div class="setting-control">
           <label class="toggle">
-            <input type="checkbox" id="settingShowAnswer" />
+            <input type="checkbox" id="settingShowAnswer" onchange="saveSettings()" />
             <span class="toggle-slider"></span>
           </label>
         </div>
@@ -301,7 +301,7 @@ D) Dynamic Object Method</pre>
           <p>Choose between practice and exam mode</p>
         </div>
         <div class="setting-control">
-          <select id="settingMode" class="select-input">
+          <select id="settingMode" class="select-input" onchange="saveSettings()">
             <option value="exam">Exam Mode (no hints)</option>
             <option value="practice">Practice Mode (with hints)</option>
           </select>
@@ -314,12 +314,12 @@ D) Dynamic Object Method</pre>
           <p>Choose your preferred AI and paste its API key.</p>
         </div>
         <div class="setting-control" style="display:flex;flex-direction:column;gap:10px;">
-          <select id="settingApiProvider" class="select-input">
+          <select id="settingApiProvider" class="select-input" onchange="saveSettings()">
             <option value="gemini">Google Gemini (Recommended)</option>
             <option value="groq">Groq (Blazing Fast, High Limits)</option>
             <option value="openrouter">OpenRouter (Multiple Models)</option>
           </select>
-          <input type="password" id="settingApiKey" placeholder="Paste API Key here..." class="text-input" style="width:100%" />
+          <input type="password" id="settingApiKey" placeholder="Paste API Key here..." class="text-input" style="width:100%" onchange="saveSettings()" oninput="saveSettings()" />
         </div>
       </div>
     </div>
@@ -479,6 +479,6 @@ D) Dynamic Object Method</pre>
 <!-- ===== TOAST ===== -->
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=8"></script>
+<script src="app.js?v=9"></script>
 </body>
 </html>
